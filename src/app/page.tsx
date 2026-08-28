@@ -1,5 +1,7 @@
+import IncidentCard from "@/components/IncidentCard";
 import type { Incident } from "@/types/incident";
 
+// Temporary incident data used while the application has no database.
 const incidents: Incident[] = [
   {
     id: "INC-001",
@@ -27,35 +29,59 @@ const incidents: Incident[] = [
   },
 ];
 
+// Main dashboard page.
 export default function Home() {
-  const applicationName: string = "Incident Reliability Platform";
   const applicationStatus: string = "Operational";
 
   return (
-    <main>
-      <h1>{applicationName}</h1>
-      <p>
-        Monitor incidents, investigate failures, and track system reliability.
-      </p>
+    <main className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <header className="mb-10">
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            Reliability Dashboard
+          </p>
 
-      <section>
-        <h2>System Status</h2>
-        <p>{applicationStatus}</p>
-      </section>
+          <h1 className="mt-2 text-3xl font-bold text-gray-900">
+            Incident Reliability Platform
+          </h1>
 
-      <section>
-        <h2>Recent Incidents</h2>
+          <p className="mt-2 text-gray-600">
+            Monitor incidents, investigate failures, and track system
+            reliability.
+          </p>
+        </header>
 
-        {incidents.map((incident) => (
-          <article key={incident.id}>
-            <h3>{incident.title}</h3>
-            <p>Incident: {incident.id}</p>
-            <p>Service: {incident.service}</p>
-            <p>Severity: {incident.severity}</p>
-            <p>Status: {incident.status}</p>
-          </article>
-        ))}
-      </section>
+        <section className="mb-10 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-gray-500">
+            System Status
+          </p>
+
+          <p className="mt-2 text-xl font-semibold text-gray-900">
+            {applicationStatus}
+          </p>
+        </section>
+
+        <section>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Recent Incidents
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-600">
+              Current and recently resolved service incidents.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {incidents.map((incident) => (
+              <IncidentCard
+                key={incident.id}
+                incident={incident}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
