@@ -1,4 +1,5 @@
 import IncidentCard from "@/components/IncidentCard";
+import MetricCard from "@/components/MetricCard";
 import type { Incident } from "@/types/incident";
 
 // Temporary incident data used while the application has no database.
@@ -33,6 +34,21 @@ const incidents: Incident[] = [
 export default function Home() {
   const applicationStatus: string = "Operational";
 
+  // Calculate dashboard metrics from the incident data.
+  const totalIncidents = incidents.length;
+
+  const activeIncidents = incidents.filter(
+    (incident) => incident.status !== "RESOLVED",
+  ).length;
+
+  const criticalIncidents = incidents.filter(
+    (incident) => incident.severity === "CRITICAL",
+  ).length;
+
+  const resolvedIncidents = incidents.filter(
+    (incident) => incident.status === "RESOLVED",
+  ).length;
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -51,7 +67,7 @@ export default function Home() {
           </p>
         </header>
 
-        <section className="mb-10 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-gray-500">
             System Status
           </p>
@@ -59,6 +75,34 @@ export default function Home() {
           <p className="mt-2 text-xl font-semibold text-gray-900">
             {applicationStatus}
           </p>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            Incident Overview
+          </h2>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              label="Total Incidents"
+              value={totalIncidents}
+            />
+
+            <MetricCard
+              label="Active Incidents"
+              value={activeIncidents}
+            />
+
+            <MetricCard
+              label="Critical Incidents"
+              value={criticalIncidents}
+            />
+
+            <MetricCard
+              label="Resolved Incidents"
+              value={resolvedIncidents}
+            />
+          </div>
         </section>
 
         <section>
