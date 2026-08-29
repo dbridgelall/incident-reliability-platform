@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import CreateIncidentForm from "@/components/CreateIncidentForm";
 import IncidentCard from "@/components/IncidentCard";
 import MetricCard from "@/components/MetricCard";
 import type {
@@ -9,7 +10,6 @@ import type {
   IncidentsResponse,
 } from "@/types/incident";
 
-// Displays the incident dashboard and retrieves incident data from the API.
 export default function IncidentDashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +24,8 @@ export default function IncidentDashboard() {
           throw new Error("Failed to load incidents.");
         }
 
-        const result: IncidentsResponse = await response.json();
+        const result: IncidentsResponse =
+          await response.json();
 
         setIncidents(result.data);
       } catch (error) {
@@ -41,6 +42,15 @@ export default function IncidentDashboard() {
 
     loadIncidents();
   }, []);
+
+  function handleIncidentCreated(
+    incident: Incident,
+  ) {
+    setIncidents((currentIncidents) => [
+      ...currentIncidents,
+      incident,
+    ]);
+  }
 
   if (isLoading) {
     return (
@@ -74,6 +84,10 @@ export default function IncidentDashboard() {
 
   return (
     <>
+      <CreateIncidentForm
+        onIncidentCreated={handleIncidentCreated}
+      />
+
       <section className="mb-10">
         <h2 className="mb-4 text-xl font-semibold text-gray-900">
           Incident Overview
