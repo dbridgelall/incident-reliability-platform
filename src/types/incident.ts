@@ -26,3 +26,10 @@ export type IncidentsResponse = {
   data: Incident[];
   count: number;
 };
+
+// Defines the data required to create a new incident.
+export type CreateIncidentInput = {
+  title: string;
+  service: string;
+  severity: IncidentSeverity;
+};
