@@ -93,3 +93,31 @@ export async function createIncident(
 
   return mapIncidentRow(result.rows[0]);
 }
+
+// Updates an incident's status and returns the updated incident.
+export async function updateIncidentStatus(
+  id: number,
+  status: IncidentStatus,
+): Promise<Incident | null> {
+  const result = await pool.query<IncidentRow>(
+    `
+      UPDATE incidents
+      SET status = $1
+      WHERE id = $2
+      RETURNING
+        id,
+        title,
+        service,
+        severity,
+        status,
+        created_at
+    `,
+    [status, id],
+  );
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return mapIncidentRow(result.rows[0]);
+}

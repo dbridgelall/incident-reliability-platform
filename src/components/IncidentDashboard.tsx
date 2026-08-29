@@ -7,14 +7,21 @@ import IncidentCard from "@/components/IncidentCard";
 import MetricCard from "@/components/MetricCard";
 import type {
   Incident,
+  IncidentStatus,
   IncidentsResponse,
 } from "@/types/incident";
 
+// Displays the incident dashboard and retrieves incident data from the API.
 export default function IncidentDashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    null,
+  );
+  const [updatingIncidentId, setUpdatingIncidentId] =
+    useState<string | null>(null);
 
+  // Loads all incidents when the dashboard first renders.
   useEffect(() => {
     async function loadIncidents() {
       try {
@@ -29,12 +36,8 @@ export default function IncidentDashboard() {
 
         setIncidents(result.data);
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.";
-
-        setError(message);
+        console.error("Failed to load incidents:", error);
+        setErrorMessage("Unable to load incidents.");
       } finally {
         setIsLoading(false);
       }
@@ -43,6 +46,7 @@ export default function IncidentDashboard() {
     loadIncidents();
   }, []);
 
+  // Adds a newly created incident to the current dashboard state.
   function handleIncidentCreated(
     incident: Incident,
   ) {
@@ -50,6 +54,54 @@ export default function IncidentDashboard() {
       ...currentIncidents,
       incident,
     ]);
+  }
+
+  // Updates an incident's status through the API and refreshes local state.
+  async function handleStatusChange(
+    incidentId: string,
+    status: IncidentStatus,
+  ) {
+    setUpdatingIncidentId(incidentId);
+
+    try {
+      const response = await fetch(
+        `/api/incidents/${incidentId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to update incident status.",
+        );
+      }
+
+      const result: {
+        data: Incident;
+      } = await response.json();
+
+      setIncidents((currentIncidents) =>
+        currentIncidents.map((incident) =>
+          incident.id === result.data.id
+            ? result.data
+            : incident,
+        ),
+      );
+    } catch (error) {
+      console.error(
+        "Failed to update incident status:",
+        error,
+      );
+    } finally {
+      setUpdatingIncidentId(null);
+    }
   }
 
   if (isLoading) {
@@ -60,10 +112,10 @@ export default function IncidentDashboard() {
     );
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <p className="text-red-600">
-        {error}
+        {errorMessage}
       </p>
     );
   }
@@ -117,24 +169,28 @@ export default function IncidentDashboard() {
       </section>
 
       <section>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Recent Incidents
-          </h2>
+        <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          Recent Incidents
+        </h2>
 
-          <p className="mt-1 text-sm text-gray-600">
-            Current and recently resolved service incidents.
+        {incidents.length === 0 ? (
+          <p className="text-gray-600">
+            No incidents have been reported.
           </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {incidents.map((incident) => (
-            <IncidentCard
-              key={incident.id}
-              incident={incident}
-            />
-          ))}
-        </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {incidents.map((incident) => (
+              <IncidentCard
+                key={incident.id}
+                incident={incident}
+                isUpdating={
+                  updatingIncidentId === incident.id
+                }
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

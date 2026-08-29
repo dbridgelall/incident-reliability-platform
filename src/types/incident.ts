@@ -33,3 +33,7 @@ export type CreateIncidentInput = {
   service: string;
   severity: IncidentSeverity;
 };
+
+export type UpdateIncidentStatusInput = {
+  status: IncidentStatus;
+};

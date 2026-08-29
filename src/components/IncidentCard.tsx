@@ -1,17 +1,48 @@
-import type { Incident } from "@/types/incident";
+import type {
+  Incident,
+  IncidentStatus,
+} from "@/types/incident";
 
-// Defines the data that must be provided to the IncidentCard component.
 type IncidentCardProps = {
   incident: Incident;
+  isUpdating: boolean;
+  onStatusChange: (
+    incidentId: string,
+    status: IncidentStatus,
+  ) => void;
 };
 
-// Displays the information for a single incident.
 export default function IncidentCard({
   incident,
+  isUpdating,
+  onStatusChange,
 }: IncidentCardProps) {
+  function handleStatusChange() {
+    if (incident.status === "OPEN") {
+      onStatusChange(
+        incident.id,
+        "INVESTIGATING",
+      );
+    }
+
+    if (incident.status === "INVESTIGATING") {
+      onStatusChange(
+        incident.id,
+        "RESOLVED",
+      );
+    }
+  }
+
+  const actionLabel =
+    incident.status === "OPEN"
+      ? "Start Investigation"
+      : incident.status === "INVESTIGATING"
+        ? "Resolve Incident"
+        : null;
+
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+      <div className="mb-3 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-gray-500">
             {incident.id}
@@ -20,10 +51,6 @@ export default function IncidentCard({
           <h3 className="mt-1 text-lg font-semibold text-gray-900">
             {incident.title}
           </h3>
-
-          <p className="mt-1 text-sm text-gray-600">
-            {incident.service}
-          </p>
         </div>
 
         <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
@@ -31,14 +58,39 @@ export default function IncidentCard({
         </span>
       </div>
 
-      <div className="mt-4 border-t border-gray-100 pt-4">
-        <p className="text-sm text-gray-600">
-          Status:{" "}
-          <span className="font-medium text-gray-900">
-            {incident.status}
-          </span>
+      <div className="space-y-2 text-sm text-gray-600">
+        <p>
+          <span className="font-medium text-gray-800">
+            Service:
+          </span>{" "}
+          {incident.service}
+        </p>
+
+        <p>
+          <span className="font-medium text-gray-800">
+            Status:
+          </span>{" "}
+          {incident.status}
+        </p>
+
+        <p>
+          <span className="font-medium text-gray-800">
+            Created:
+          </span>{" "}
+          {new Date(incident.createdAt).toLocaleString()}
         </p>
       </div>
+
+      {actionLabel && (
+        <button
+          type="button"
+          onClick={handleStatusChange}
+          disabled={isUpdating}
+          className="mt-4 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isUpdating ? "Updating..." : actionLabel}
+        </button>
+      )}
     </article>
   );
 }

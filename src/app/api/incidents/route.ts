@@ -27,6 +27,8 @@ export async function GET() {
   }
 }
 
+
+
 // Handles POST requests that create a new incident.
 export async function POST(request: Request) {
   let body: unknown;
