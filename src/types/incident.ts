@@ -20,3 +20,9 @@ export type Incident = {
   status: IncidentStatus;
   createdAt: string;
 };
+
+// Defines the structure returned by the incidents API.
+export type IncidentsResponse = {
+  data: Incident[];
+  count: number;
+};
