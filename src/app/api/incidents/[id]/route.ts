@@ -1,4 +1,4 @@
-import { incidents } from "@/data/incidents";
+import { getIncidentById } from "@/lib/incidentRepository";
 
 type RouteContext = {
   params: Promise<{
@@ -15,22 +15,49 @@ export async function GET(
 
   const { id } = await context.params;
 
-  const incident = incidents.find(
-    (incident) => incident.id === id,
-  );
+  // Application IDs use the format INC-001.
+  const match = /^INC-(\d+)$/.exec(id);
 
-  if (!incident) {
+  if (!match) {
     return Response.json(
       {
-        error: "Incident not found.",
+        error: "Invalid incident ID.",
       },
       {
-        status: 404,
+        status: 400,
       },
     );
   }
 
-  return Response.json({
-    data: incident,
-  });
+  const numericId = Number(match[1]);
+
+  try {
+    const incident = await getIncidentById(numericId);
+
+    if (!incident) {
+      return Response.json(
+        {
+          error: "Incident not found.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    return Response.json({
+      data: incident,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve incident:", error);
+
+    return Response.json(
+      {
+        error: "Failed to retrieve incident.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }

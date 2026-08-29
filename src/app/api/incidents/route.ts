@@ -1,13 +1,30 @@
-import { incidents } from "@/data/incidents";
+import {
+  createIncident,
+  getAllIncidents,
+} from "@/lib/incidentRepository";
 import { validateCreateIncident } from "@/lib/incidentValidation";
-import type { Incident } from "@/types/incident";
 
 // Handles GET requests for the incident collection.
 export async function GET() {
-  return Response.json({
-    data: incidents,
-    count: incidents.length,
-  });
+  try {
+    const incidents = await getAllIncidents();
+
+    return Response.json({
+      data: incidents,
+      count: incidents.length,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve incidents:", error);
+
+    return Response.json(
+      {
+        error: "Failed to retrieve incidents.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }
 
 // Handles POST requests that create a new incident.
@@ -41,23 +58,27 @@ export async function POST(request: Request) {
     );
   }
 
-  const incident: Incident = {
-    id: `INC-${String(incidents.length + 1).padStart(3, "0")}`,
-    title: input.title,
-    service: input.service,
-    severity: input.severity,
-    status: "OPEN",
-    createdAt: new Date().toISOString(),
-  };
+  try {
+    const incident = await createIncident(input);
 
-  incidents.push(incident);
+    return Response.json(
+      {
+        data: incident,
+      },
+      {
+        status: 201,
+      },
+    );
+  } catch (error) {
+    console.error("Failed to create incident:", error);
 
-  return Response.json(
-    {
-      data: incident,
-    },
-    {
-      status: 201,
-    },
-  );
+    return Response.json(
+      {
+        error: "Failed to create incident.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }
