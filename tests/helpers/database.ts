@@ -1,13 +1,17 @@
 import pool from "../../src/lib/db";
 
-// Removes test incidents and resets generated IDs.
+// Removes all test data and resets generated IDs.
+// CASCADE handles tables that reference incidents through foreign keys.
 export async function resetTestDatabase() {
-  await pool.query(
-    "TRUNCATE TABLE incidents RESTART IDENTITY;",
-  );
+  await pool.query(`
+    TRUNCATE TABLE
+      incident_events,
+      incidents
+    RESTART IDENTITY CASCADE;
+  `);
 }
 
-// Closes the PostgreSQL connection pool after integration tests.
+// Closes the PostgreSQL connection pool when explicitly needed.
 export async function closeTestDatabase() {
   await pool.end();
 }
