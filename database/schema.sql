@@ -2,18 +2,27 @@
 -- Incident Reliability Platform
 -- PostgreSQL Database Schema
 -- ============================================================
+-- Creates the database objects required by the application.
+--
+-- This schema is intended for a fresh database installation.
+-- Existing installations should use the appropriate migrations
+-- instead of recreating these tables.
+-- ============================================================
 
 
 -- ============================================================
 -- Incidents
--- Stores the current state of each reliability incident.
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS incidents (
+CREATE TABLE incidents (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    service VARCHAR(255) NOT NULL,
+
+    title VARCHAR(200) NOT NULL,
+
+    service VARCHAR(100) NOT NULL,
+
     severity VARCHAR(20) NOT NULL
+        CONSTRAINT incidents_severity_check
         CHECK (
             severity IN (
                 'LOW',
@@ -22,8 +31,10 @@ CREATE TABLE IF NOT EXISTS incidents (
                 'CRITICAL'
             )
         ),
+
     status VARCHAR(20) NOT NULL
         DEFAULT 'OPEN'
+        CONSTRAINT incidents_status_check
         CHECK (
             status IN (
                 'OPEN',
@@ -31,20 +42,23 @@ CREATE TABLE IF NOT EXISTS incidents (
                 'RESOLVED'
             )
         ),
+
     created_at TIMESTAMP WITH TIME ZONE NOT NULL
         DEFAULT CURRENT_TIMESTAMP
 );
 
 
 -- ============================================================
--- Incident Events
--- Stores the historical lifecycle events for each incident.
+-- Incident Lifecycle Events
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS incident_events (
+CREATE TABLE incident_events (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
     incident_id INTEGER NOT NULL,
+
     event_type VARCHAR(50) NOT NULL
+        CONSTRAINT incident_events_event_type_check
         CHECK (
             event_type IN (
                 'CREATED',
@@ -52,6 +66,7 @@ CREATE TABLE IF NOT EXISTS incident_events (
                 'RESOLVED'
             )
         ),
+
     created_at TIMESTAMP WITH TIME ZONE NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
 
@@ -64,9 +79,10 @@ CREATE TABLE IF NOT EXISTS incident_events (
 
 -- ============================================================
 -- Indexes
--- Improves lookup performance for an incident's event history.
+-- ============================================================
+-- Lifecycle-history requests filter events by incident_id.
+-- This index avoids scanning the entire incident_events table.
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS
-    idx_incident_events_incident_id
-ON incident_events(incident_id);
+CREATE INDEX idx_incident_events_incident_id
+    ON incident_events(incident_id);
