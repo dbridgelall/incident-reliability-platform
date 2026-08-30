@@ -37,3 +37,16 @@ export type CreateIncidentInput = {
 export type UpdateIncidentStatusInput = {
   status: IncidentStatus;
 };
+
+// Lifecycle events recorded in an incident's history.
+export type IncidentEventType =
+  | "CREATED"
+  | "INVESTIGATION_STARTED"
+  | "RESOLVED";
+
+export interface IncidentEvent {
+  id: number;
+  incidentId: string;
+  eventType: IncidentEventType;
+  createdAt: string;
+}
