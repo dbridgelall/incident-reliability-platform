@@ -10,6 +10,10 @@ import type {
   IncidentStatus,
   IncidentsResponse,
 } from "@/types/incident";
+import type {
+  ReliabilityMetrics,
+  ReliabilityMetricsResponse,
+} from "@/types/metrics";
 
 // Displays the incident dashboard and retrieves incident data from the API.
 export default function IncidentDashboard() {
@@ -20,31 +24,78 @@ export default function IncidentDashboard() {
   );
   const [updatingIncidentId, setUpdatingIncidentId] =
     useState<string | null>(null);
+  const [reliabilityMetrics, setReliabilityMetrics] =
+    useState<ReliabilityMetrics | null>(null);
 
-  // Loads all incidents when the dashboard first renders.
+  // Loads incidents and reliability metrics when the dashboard first renders.
   useEffect(() => {
-    async function loadIncidents() {
+    async function loadDashboardData() {
       try {
-        const response = await fetch("/api/incidents");
+        const [
+          incidentsResponse,
+          metricsResponse,
+        ] = await Promise.all([
+          fetch("/api/incidents"),
+          fetch("/api/metrics"),
+        ]);
 
-        if (!response.ok) {
+        if (!incidentsResponse.ok) {
           throw new Error("Failed to load incidents.");
         }
 
-        const result: IncidentsResponse =
-          await response.json();
+        if (!metricsResponse.ok) {
+          throw new Error(
+            "Failed to load reliability metrics.",
+          );
+        }
 
-        setIncidents(result.data);
+        const incidentsResult: IncidentsResponse =
+          await incidentsResponse.json();
+
+        const metricsResult: ReliabilityMetricsResponse =
+          await metricsResponse.json();
+
+        setIncidents(incidentsResult.data);
+        setReliabilityMetrics(metricsResult.data);
       } catch (error) {
-        console.error("Failed to load incidents:", error);
-        setErrorMessage("Unable to load incidents.");
+        console.error(
+          "Failed to load dashboard data:",
+          error,
+        );
+
+        setErrorMessage(
+          "Unable to load dashboard data.",
+        );
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadIncidents();
+    void loadDashboardData();
   }, []);
+
+  // Refreshes reliability metrics after incident lifecycle changes.
+  async function refreshReliabilityMetrics() {
+    try {
+      const response = await fetch("/api/metrics");
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load reliability metrics.",
+        );
+      }
+
+      const result: ReliabilityMetricsResponse =
+        await response.json();
+
+      setReliabilityMetrics(result.data);
+    } catch (error) {
+      console.error(
+        "Failed to refresh reliability metrics:",
+        error,
+      );
+    }
+  }
 
   // Adds a newly created incident to the current dashboard state.
   function handleIncidentCreated(
@@ -94,6 +145,9 @@ export default function IncidentDashboard() {
             : incident,
         ),
       );
+
+      // Recalculate MTTR after a lifecycle status change.
+      await refreshReliabilityMetrics();
     } catch (error) {
       console.error(
         "Failed to update incident status:",
@@ -107,7 +161,7 @@ export default function IncidentDashboard() {
   if (isLoading) {
     return (
       <p className="text-gray-600">
-        Loading incidents...
+        Loading dashboard...
       </p>
     );
   }
@@ -130,9 +184,12 @@ export default function IncidentDashboard() {
     (incident) => incident.severity === "CRITICAL",
   ).length;
 
-  const resolvedIncidents = incidents.filter(
-    (incident) => incident.status === "RESOLVED",
-  ).length;
+  const meanTimeToResolution =
+    reliabilityMetrics?.meanTimeToResolutionMinutes == null
+      ? "N/A"
+      : `${reliabilityMetrics.meanTimeToResolutionMinutes.toFixed(
+          1,
+        )} min`;
 
   return (
     <>
@@ -162,8 +219,8 @@ export default function IncidentDashboard() {
           />
 
           <MetricCard
-            label="Resolved Incidents"
-            value={resolvedIncidents}
+            label="Mean Time to Resolution"
+            value={meanTimeToResolution}
           />
         </div>
       </section>

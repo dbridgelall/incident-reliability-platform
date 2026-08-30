@@ -1,7 +1,7 @@
 // Defines the data required by the MetricCard component.
 type MetricCardProps = {
   label: string;
-  value: number;
+  value: number | string;
 };
 
 // Displays a single dashboard metric.
