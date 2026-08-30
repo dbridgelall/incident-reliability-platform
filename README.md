@@ -83,6 +83,8 @@ Resolution Time = RESOLVED timestamp - CREATED timestamp
 
 The platform then averages the resolution times of resolved incidents.
 
+![Incident reliability metrics](docs/images/metrics.png)
+
 ### Data Validation
 
 Incoming API requests are validated before database operations are performed.
@@ -162,6 +164,8 @@ RESOLVED
 ```
 
 Incident state changes and their corresponding lifecycle events are persisted together so the current state and event history remain consistent.
+
+![Incident lifecycle history](docs/images/incident-history.png)
 
 ## Technology Stack
 
