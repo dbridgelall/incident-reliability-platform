@@ -424,6 +424,44 @@ database/schema.sql
 
 rather than running the historical backfill migration.
 
+## Test Database Setup
+
+The integration tests use a separate PostgreSQL database so testing does not modify development data.
+
+### 1. Create the test database
+
+```bash
+createdb -U postgres incident_reliability_test
+```
+
+### 2. Apply the database schema
+
+```bash
+psql -U postgres -d incident_reliability_test -f database/schema.sql
+```
+
+### 3. Create `.env.test`
+
+Create a file named `.env.test` in the project root:
+
+```dotenv
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=incident_reliability_test
+DATABASE_USER=postgres
+DATABASE_PASSWORD=your_postgres_password
+```
+
+Change the port, username, and password if your PostgreSQL installation uses different values.
+
+The `.env.test` file is ignored by Git so local database credentials are not committed.
+
+### 4. Run the tests
+
+```bash
+npm test
+```
+
 ## Testing
 
 Run the complete test suite:
