@@ -1,9 +1,15 @@
+import { existsSync } from "node:fs";
+
 import { config } from "dotenv";
 
-config({
-  path: ".env.test",
-  override: true,
-});
+// Local development uses .env.test.
+// CI supplies the database environment variables directly.
+if (existsSync(".env.test")) {
+  config({
+    path: ".env.test",
+    override: true,
+  });
+}
 
 if (process.env.NODE_ENV !== "test") {
   throw new Error(
