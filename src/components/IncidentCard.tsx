@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+
+import IncidentTimeline from "@/components/IncidentTimeline";
 import type {
   Incident,
   IncidentStatus,
@@ -17,6 +22,8 @@ export default function IncidentCard({
   isUpdating,
   onStatusChange,
 }: IncidentCardProps) {
+  const [showHistory, setShowHistory] = useState(false);
+
   function handleStatusChange() {
     if (incident.status === "OPEN") {
       onStatusChange(
@@ -91,6 +98,28 @@ export default function IncidentCard({
           {isUpdating ? "Updating..." : actionLabel}
         </button>
       )}
+
+      <div className="mt-5 border-t border-gray-200 pt-4">
+        <button
+          type="button"
+          onClick={() =>
+            setShowHistory((current) => !current)
+          }
+          className="text-sm font-medium text-gray-700 hover:text-gray-950"
+          aria-expanded={showHistory}
+        >
+          {showHistory
+            ? "Hide history"
+            : "View history"}
+        </button>
+
+        {showHistory && (
+          <IncidentTimeline
+            incidentId={incident.id}
+            status={incident.status}
+          />
+        )}
+      </div>
     </article>
   );
 }
