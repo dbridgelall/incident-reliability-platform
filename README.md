@@ -4,6 +4,14 @@ A full-stack incident management and reliability platform for tracking service i
 
 The application provides persistent incident tracking, lifecycle event history, operational metrics such as Mean Time to Resolution (MTTR), and a tested REST API backed by PostgreSQL.
 
+## Live Deployment
+
+**Live Application:** https://incident-reliability-platform.vercel.app/
+
+The application is deployed on Vercel and connected to a hosted Neon PostgreSQL database using a pooled production connection.
+
+Production database credentials are managed through deployment environment variables and are not stored in the repository.
+
 ## Dashboard
 
 ![Incident Reliability Platform dashboard](docs/images/dashboard.png)
@@ -123,6 +131,27 @@ React / Next.js Dashboard
  incidents   incident_events
 ```
 
+### Production Architecture
+
+```text
+Users
+  │
+  │ HTTPS
+  ▼
+Vercel
+Next.js Application
+  │
+  ├── React Dashboard
+  │
+  └── REST API Routes
+          │
+          │ Pooled PostgreSQL Connection
+          ▼
+      Neon PostgreSQL
+          │
+          ├── incidents
+          └── incident_events
+
 Responsibilities are separated so that UI components do not communicate directly with the database.
 
 ### Incident Lifecycle
@@ -196,6 +225,14 @@ Incident state changes and their corresponding lifecycle events are persisted to
 - ESLint
 - TypeScript
 - GitHub Actions CI
+- Production health checks
+
+### Deployment
+
+- Vercel
+- Neon
+- GitHub Actions
+- Environment-based production configuration
 
 ## Database Design
 
@@ -594,7 +631,6 @@ Potential extensions include:
 - Alert integrations
 - Filtering and search
 - Pagination
-- Production deployment
 - Containerized local development
 
 ## Purpose
